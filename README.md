@@ -1,8 +1,8 @@
-# Grid Square Environmental Data Generage Program
+# Grid Square Environmental Data Generate Program
 
 [日本語](./README-ja.md) | English
 
-The Grid Square Environmental Data Generage Program is a program that generates binary files containing tile images and attributes of geographical features, cut to match the boundaries of each Grid Square geographical feature, using specified Grid Square data. This document describes the specifications and usage instructions for this program.
+The Grid Square Environmental Data Generate Program is a program that generates binary files containing tile images and attributes of geographical features, cut to match the boundaries of each Grid Square geographical feature, using specified Grid Square data. This document describes the specifications and usage instructions for this program.
 
 ## Operating Environment
 
