@@ -1,10 +1,12 @@
-# メッシュデータ生成プログラム
+# Grid Square Environmetnal Data Generage Program
 
-メッシュデータ生成プログラムとは、所定のメッシュデータをもちいて、各メッシュ地物の範囲と一致するように切り出したタイル画像および地物の属性等を格納したバイナリファイルを生成するプログラムです。本書は、本プログラムの仕様・使用方法などを記載するものです。
+[日本語](./README-ja.md) | English
 
-## 動作確認環境
+The Grid Square Environmetnal Data Generage Program is a program that generates binary files containing tile images and attributes of geographical features, cut to match the boundaries of each Grid Square geographical feature, using specified Grid Square data. This document describes the specifications and usage instructions for this program.
 
-- Python 3.8および下記のライブラリ
+## Operating Environment
+
+- Python 3.8 and the following libraries
     - pandas v1.4.1
     - shapely v1.8.1.post1
     - tiletanic v1.1.0
@@ -12,35 +14,36 @@
     - Pillow v8.0.0
 - GDAL v3.4.0
 
-## 環境構築
+## Environment setup
 
-`Docker`をもちいて下記のとおりイメージをビルドします。
+Using `Docker`, build an image as follows:
 
 ```sh
 cd meshwriter
 docker build . -t meshscript
 ```
 
-## 岩相辞書ファイルの作成
+## Creating a Rock Type Dictionary File
 
-- `prepare.py`は地質PNGのピクセル値を変換するための辞書を作成するスクリプトです。
-- `長野県岩相区分.xlsx`に変更があった場合は下記コマンドによりスクリプトを実行し、生成される`geology_hex.json`を、本プログラムを実行して得られるメッシュデータディレクトリ直下に配置してください。
+- `prepare.py` is a script that creates a dictionary for converting pixel values of geological PNGs.
+- If there are any changes in `長野県岩相区分.xlsx`, execute the script with the following command and place the generated `geology_hex.json` file in the root directory of the grid square data obtained by running this program.
 
 ```shell
 cd src/meshwriter
 docker run --rm -v $PWD:/usr/src/app meshscript python3 prepare.py
-#./meshwriter/geology_hex.json として生成されます
+#./meshwriter/geology_hex.json will be generated
 ```
 
 
-## 入力ファイルの配置
+## Placement of Input Files
 
-`./meshwriter`以下に、`mesh.gpkg`および`気象情報CSVフォルダ(下記例ではoutput)`を配置します。
+Deploy `mesh.gpkg` and `Weather Information CSV folder (in the example below, it's referred to as "output")` in the `./meshwriter` directory.
 
 ```
 ./meshwriter
 ├── Dockerfile
 ├── README.md
+├── README-ja.md
 ├── __init__.py
 ├── __main__.py
 ├── mesh.gpkg
@@ -53,28 +56,26 @@ docker run --rm -v $PWD:/usr/src/app meshscript python3 prepare.py
 │   ├── 523765
 │   │   ├── 52376540.csv
 │   │   ├── 52376541.csv
-// 以下略
+// rest is omitted.
 ```
 
 
-## 実行方法
+## How to run it:
 
 ```sh
 cd meshwriter
 docker run --rm -v $PWD:/usr/src/app meshscript python3 __main__.py
 ```
 
-上記のとおり処理を開始すると、`./meshwriter/meshdata`にメッシュデータが生成されていきます。全ての処理が完了するまで2時間ほどかかると思われます。
+As you start the process as described above, Grid Square data will be generated in `./meshwriter/meshdata`.
 
+### ### Configuration Items
 
-### 設定項目
-
-上述のとおりファイル等を配置すればメッシュデータを生成できますが、設定を変更可能な項目がいくつかあります。
-設定は`__main__.py`ファイル冒頭の下記の変数で定義されます。
+As mentioned above, you can generate Grid Square data by placing the required files, but there are several configuration options that can be modified. The settings are defined by the following variables at the beginning of the `__main__.py` file.
 
 ```python
-# __main__.pyの15行目以下
-############ 設定値 ############
+# Starting from line 15 in `__main__.py`
+############ Configuration Items ############
 OVERWRITE = False
 INPUT_GPKG = "mesh.gpkg"
 OUTPUT_DIR = "meshdata"
@@ -82,28 +83,29 @@ MESH_CLIMATE_CSV_DIR = "output"
 ###############################
 ```
 
-#### OVERWRITE(上書き)
+#### OVERWRITE
 
-- デフォルトは`False`です。この場合、既に生成が完了したメッシュについては処理をスキップします。なので一度中断しても途中から再開が可能です。
-- `True`とすると、既に生成が完了したメッシュがあっても、再度タイルを取得し上書きします。全て最初からやり直すという意味です。
+- The default is `False`. In this case, if the Grid Square generation is already completed, it will skip the process. So, you can resume the process from where you left off if you had interrupted it.
+- Setting it to `True` will force the retrieval of tiles and overwrite them, even if the grid square generation is already completed. This means starting the process from scratch.
 
 #### INPUT_GPKG
 
-- 入力メッシュデータの位置を、カレントディレクトリから見た相対パスで定義します。
+- Defines the location of the input Grid Square data as a relative path from the current directory.
 
 #### OUTPUT_DIR
 
-- 出力フォルダの位置を、カレントディレクトリから見た相対パスで定義します。
+- Defines the location of the output folder as a relative path from the current directory.
 
 #### MESH_CLIMATE_CSV_DIR
 
-- 2020年度成果のCSVファイル群を含むフォルダの位置を、カレントディレクトリから見た相対パスで定義します。
+- Defines the location of the folder containing the CSV files for the climate data as a relative path from the current directory.
 
-## 仕様
+## Specifications
 
-### 全般
+### General
 
-- `OUTPUT_DIR`で指定したフォルダ以下に、常に下記の構造でファイルを出力する。なお、`.aux.xml`ファイルはGDALのメタデータファイルであり、今回のプログラム仕様の範囲外のファイルであるが、ファイルサイズは小さく無害なことと、`QGIS`などで表示確認をする際に便利であるため、配置したままとする。
+- Files are always output in the following structure under the folder specified by `OUTPUT_DIR`. Note that the `.aux.xml` file is a GDAL metadata file and is outside the scope of this program's specifications. However, it is left in place because it is small in size and harmless, and it is useful for display confirmation in software like `QGIS`.
+
     ```
     .
     ├── dem.png
@@ -117,12 +119,12 @@ MESH_CLIMATE_CSV_DIR = "output"
     └── slope.png.aux.xml
     ```
 
-### 気候・土地利用データおよびメッシュ領域について
+### Climate and Land Use Data and grid square Regions
 
-- 2020年度成果のCSVファイル群およびメッシュデータの属性値（土地利用データ）をPickle形式のバイナリデータとして保存する。
-- メッシュ領域を`minx, miny, maxx, maxy`として格納する。
-- ファイル名は`meshdata.pickle`とする。
-- Pickleデータには、下記構造の`dict`を保存する。
+- Save the meteorological data CSV files and grid square data attribute values (land use data) as Pickle format binary data.
+- Store the grid square region as `minx, miny, maxx, maxy`.
+- The file name should be `meshdata.pickle`.
+- The Pickle data should store a `dict` with the following structure.
     ```python
     {
         "日降水量": list,
@@ -151,17 +153,17 @@ MESH_CLIMATE_CSV_DIR = "output"
     ```
 
 
-### タイルデータについて
+### Tile Data
 
-- 標高、傾斜、傾斜方向、地質はPNGタイルを取得し、メッシュの領域に一致するよう切り出す。ファイル名の対応は下記のとおり。
+- Obtain PNG tiles for elevation, slope, aspect, and geology, and crop them to match the grid square region. The file names correspond as follows.
     - 標高: `dem.png`
     - 傾斜: `slope.png`
     - 傾斜方向: `direction.png`
     - 地質: `geology.png`
-- 取得するタイルのズームレベルはすべて14とする。
-- 切り出し画像は、タイル画像（EPSG:3857）をメッシュデータの投影法（EPSG:4301）へ再投影したうえで切り出す。
-    - 再投影時のリサンプリング手法は`nearest`とする。
+- The zoom level for obtaining tiles is fixed at 14.
+- Crop the extracted images after reprojecting the tile images (EPSG:3857) to the projection of the grid square data (EPSG:4301).
+    - Use the "nearest" resampling method during reprojection.
 
-### その他
+### Miscellaneous
 
-- タイルサーバーとの通信状況によって例外が発生することがあり、その際は処理が中断されます。その場合は再度同じコマンドで処理を開始すれば、中断された箇所から再開することができます。
+- Exceptions may occur due to communication with the tile server, and in such cases, the process will be interrupted. In such a situation, you can resume the process from where it was interrupted by starting it again with the same command.
